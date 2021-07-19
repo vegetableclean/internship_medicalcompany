@@ -1,0 +1,65 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*- 寫一個小程式
+import cv2
+#將原始圖片(jpg)轉換成hsv的格式
+image = cv2.imread(r'C:\test\image.jpg')
+hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+#cv2.imshow('Input', image)
+#cv2.imshow('Result', hsv)
+#cv2.waitKey(0)
+#將hsv轉換成
+def get_hue(img):
+    hue= img[:,:,0]
+    return hue
+import numpy as np
+
+data = np.array(hsv)
+#print(data.shape)
+hue=get_hue(hsv)
+#print(hue.shape)
+#print("原始的hue",hue)
+cos_hue=np.cos(hue)
+sin_hue=np.sin(hue)
+#print(cos_hue.shape)
+#print("cos的hue",cos_hue)
+sat=hsv[:,:,1]
+val=hsv[:,:,2]
+new_image = np.array([cos_hue,sin_hue,sat,val])
+#print('合并矩阵：\n',new_image)
+#print('维数：',new_image.shape)
+#計算變異數
+#HSV H
+cov_cos_hue=np.cov(cos_hue)
+#print(cov_cos_hue.shape)
+S_cov_cos_hue=np.sum(cov_cos_hue)
+#print('Sum_cov_cos_hue:',S_cov_cos_hue)
+cov_sin_hue=np.cov(sin_hue)
+#print(cov_cos_hue.shape)
+S_cov_sin_hue=np.sum(cov_sin_hue)
+#print('Sum_cov_sin_hue:',S_cov_sin_hue)
+#saturation
+cov_sat=np.cov(sat)
+S_cov_sat=np.sum(cov_sat)
+#Value
+cov_val=np.cov(val)
+S_cov_val=np.sum(cov_val)
+#變異矩陣
+col,row= 4,4
+Cov_matrix=np.zeros((col, row), dtype=float, order='C')
+Cov_matrix[:,0]=[S_cov_cos_hue, S_cov_sin_hue, S_cov_sat, S_cov_val]
+Cov_matrix[:,1]=[S_cov_sin_hue, S_cov_sin_hue, S_cov_sin_hue, S_cov_sin_hue]
+Cov_matrix[:,2]=[S_cov_sat, S_cov_sin_hue,S_cov_sat, S_cov_sat]
+Cov_matrix[:,3]=[S_cov_val, S_cov_sin_hue,S_cov_sat, S_cov_val]
+#print('變異矩陣:',Cov_matrix)
+#print('變異矩陣大小:',Cov_matrix.shape)
+#PCA
+from sklearn.decomposition import PCA
+pca = PCA(n_components=3)
+pca_result=pca.fit(Cov_matrix)
+print('PCA變異比',pca.explained_variance_ratio_)
+print('singular_value',pca.singular_values_)
+
+
+
+
+    
